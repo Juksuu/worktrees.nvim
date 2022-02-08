@@ -52,6 +52,7 @@ M.new_worktree = function(opts)
     local folder = opts.folder or opts.branch
     local relative_path = utils.get_relative_worktree_path(folder)
 
+    -- Create custom job for creating new worktree
     local cmd = "git"
     local args = {
         "worktree",
@@ -81,6 +82,8 @@ end
 
 M.switch_worktree = function(input)
     vim.notify("Switching to another worktree")
+
+    -- Save git info before changing directory
     local before_git_path_info = utils.get_git_path_info()
 
     local worktrees = utils.get_worktrees()
@@ -92,7 +95,12 @@ M.switch_worktree = function(input)
         end
     end
 
+    -- Change neovim cwd
     vim.loop.chdir(path)
+
+    -- Clear jumplist so that no file in the old worktree is present
+    -- in the jumplist for accidental switching of worktrees
+    vim.cmd("clearjumps")
 
     utils.update_current_buffer(before_git_path_info)
 end
