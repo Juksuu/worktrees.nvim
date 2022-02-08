@@ -16,7 +16,11 @@ M.setup = function(opts)
         M.new_worktree_command,
         { nargs = "*" }
     )
-    vim.api.nvim_add_user_command("GitWorktreeSwitch", M.switch_worktree, {})
+    vim.api.nvim_add_user_command(
+        "GitWorktreeSwitch",
+        M.switch_worktree_command,
+        { nargs = 1 }
+    )
     vim.api.nvim_add_user_command("GitWorktreeTrack", M.new_worktree_track, {})
 end
 
@@ -63,8 +67,32 @@ M.new_worktree = function(opts)
         table.insert(args, opts.base_branch)
     end
 
-    local create_job = jobs.new_job(cmd, args)
+    local create_job = jobs.custom_job(cmd, args)
     create_job:sync()
+end
+
+M.switch_worktree_command = function(input)
+    local args = input.args:split_string(" ")
+
+    if not args[1] then
+        return
+    end
+
+    M.switch_worktree(args[1])
+end
+
+M.switch_worktree = function(input)
+    vim.notify("Switching to another worktree")
+
+    local worktrees = utils.get_worktrees()
+    local path = nil
+    for _, worktree in pairs(worktrees) do
+        if worktree.folder == input or worktree.branch == input then
+            path = worktree.path
+            break
+        end
+    end
+    vim.loop.chdir(path)
 end
 
 M.new_worktree_track = function()
@@ -73,12 +101,6 @@ M.new_worktree_track = function()
     )
 
     -- TODO: Create new worktree to track remote branch
-end
-
-M.switch_worktree = function()
-    vim.notify_once("Switching to another worktree")
-
-    -- TODO: Switch to desired worktree
 end
 
 return M

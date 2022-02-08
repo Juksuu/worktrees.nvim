@@ -2,6 +2,14 @@ local Job = require("plenary.job")
 
 local M = {}
 
+M.custom_job = function(cmd, args)
+    return Job:new({
+        command = cmd,
+        args = args,
+        cwd = vim.loop.cwd(),
+    })
+end
+
 M.is_bare_repo = Job:new({
     "git",
     "rev-parse",
@@ -16,12 +24,12 @@ M.toplevel_dir = Job:new({
     cwd = vim.loop.cwd(),
 })
 
-M.new_job = function(cmd, args)
-    return Job:new({
-        command = cmd,
-        args = args,
-        cwd = vim.loop.cwd(),
-    })
-end
+M.list_worktrees = Job:new({
+    "git",
+    "worktree",
+    "list",
+    "--porcelain",
+    cwd = vim.loop.cwd(),
+})
 
 return M
