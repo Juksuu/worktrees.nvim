@@ -52,8 +52,6 @@ M.new_worktree = function(opts)
     local folder = opts.folder or opts.branch
     local relative_path = utils.get_relative_worktree_path(folder)
 
-    vim.notify(vim.inspect(relative_path))
-
     local cmd = "git"
     local args = {
         "worktree",
@@ -83,6 +81,7 @@ end
 
 M.switch_worktree = function(input)
     vim.notify("Switching to another worktree")
+    local before_git_path_info = utils.get_git_path_info()
 
     local worktrees = utils.get_worktrees()
     local path = nil
@@ -92,7 +91,10 @@ M.switch_worktree = function(input)
             break
         end
     end
+
     vim.loop.chdir(path)
+
+    utils.update_current_buffer(before_git_path_info)
 end
 
 M.new_worktree_track = function()

@@ -21,10 +21,10 @@ end
 M.get_git_path_info = function()
     local git_info = {}
     git_info.is_bare_repo = M.str_to_boolean(
-        table.concat(jobs.is_bare_repo:sync())
+        table.concat(jobs.is_bare_repo():sync())
     )
 
-    local toplevel = table.concat(jobs.toplevel_dir:sync())
+    local toplevel = table.concat(jobs.toplevel_dir():sync())
     git_info.toplevel_path = Path:new(toplevel):parent()
 
     return git_info
@@ -41,26 +41,22 @@ M.get_relative_worktree_path = function(folder)
 end
 
 M.get_worktrees = function()
-    local worktrees = jobs.list_worktrees:sync()
+    local worktrees = jobs.list_worktrees():sync()
     local output = {}
 
-    local sha = nil
-    local path = nil
-    local branch = nil
-    local folder = nil
-    local is_bare = false
+    local sha, path, branch, folder, is_bare = nil, nil, nil, nil, false
     for _, worktree_data in pairs(worktrees) do
         worktree_data = worktree_data:split_string(" ")
 
         if not worktree_data[1] and not is_bare then
-            table.insert(
-                output,
-                { sha = sha, path = path, branch = branch, folder = folder }
-            )
+            table.insert(output, {
+                sha = sha,
+                path = path,
+                branch = branch,
+                folder = folder,
+            })
 
-            sha = nil
-            path = nil
-            branch = nil
+            sha, path, branch = nil, nil, nil
         elseif worktree_data[1] == "worktree" then
             is_bare = false
             path = worktree_data[2]
@@ -79,4 +75,40 @@ M.get_worktrees = function()
 
     return output
 end
+
+M.update_current_buffer = function(git_path_info)
+    local cwd = vim.loop.cwd()
+
+    local buffer_path = Path:new(vim.api.nvim_buf_get_name(0))
+    if not buffer_path:is_file() or git_path_info.is_bare_repo then
+        vim.cmd("e .")
+        return
+    end
+
+    local relative_path = buffer_path:make_relative(
+        git_path_info.toplevel_path:absolute()
+    )
+
+    local split_path = relative_path:split_string("/")
+    table.remove(split_path, 1)
+    local buffer_path_in_new_cwd = Path:new(
+        cwd .. "/" .. table.concat(split_path, "/")
+    )
+
+    if not buffer_path_in_new_cwd:exists() then
+        vim.cmd("e .")
+        return
+    end
+
+    vim.schedule(function()
+        vim.fn.bufnr(buffer_path_in_new_cwd:absolute(), true)
+        vim.api.nvim_buf_delete(0, {})
+    end)
+
+    vim.schedule(function()
+        local bufnr = vim.fn.bufnr(buffer_path_in_new_cwd:absolute(), false)
+        vim.api.nvim_set_current_buf(bufnr)
+    end)
+end
+
 return M
