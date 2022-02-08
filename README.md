@@ -28,8 +28,6 @@ use({
 
 ## Usage
 
-Currently this plugin only provides a way to create worktrees, but plan is to have a way for switching worktrees and for tracking remote branches
-
 ### Creating new worktree
 
 New worktree can be created using the provided command GitWorktreeCreate
@@ -48,8 +46,28 @@ or with lua
 })
 ```
 
+### Switching to another worktree
+
+Switching to another worktree requires a parameter that can be either branch name or folder name.
+
+If a file is open in a buffer when switching, the plugin will try to find the file in the other worktree, if it exists it will change the buffer to correspond to  the new worktree file. Otherwise Ex is opened (will most likely change this to be configurable)
+
+Switching can be done using the provided command GitWorktreeSwitch
+
+```
+:GitWorktreeSwitch <branch/folder>
+```
+
+or with lua
+
+```lua
+:lua require("worktrees").switch_worktree(<branch/folder>)
+```
+
 ## TODO
 
 - [x]  Creation of new worktrees
-- [ ]  Switching to another worktree
+- [x]  Switching to another worktree
 - [ ]  Tracking branch from remote to worktree
+- [ ]  Error handling
+- [ ]  Options to customize behavior
