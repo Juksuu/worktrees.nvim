@@ -1,13 +1,15 @@
-# worktrees.nvim
+# Worktrees.nvim
 
 Git worktree wrapper for neovim
 
-## Requirements<a name="requirements"></a>
+After using [git-worktree.nvim](https://github.com/ThePrimeagen/git-worktree.nvim) plugin for quite some time I decided to make my own git worktree plugin with a different api and flow/usage.
 
--   neovim nightly (0.7+)
--   plenary.nvim
+## Requirements
 
-## Installation<a name="installation"></a>
+- neovim nightly (0.7+)
+- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
+
+## Installation
 
 Install the plugin and dependencies with prefered plugin manager
 
@@ -24,10 +26,9 @@ use({
 })
 ```
 
-## Usage<a name="usage"></a>
+## Usage
 
-Currently this plugin only provides a way to create worktrees,
-but plan is to have a way for switching worktrees and for tracking remote branches
+Currently this plugin only provides a way to create worktrees, but plan is to have a way for switching worktrees and for tracking remote branches
 
 ### Creating new worktree
 
@@ -42,7 +43,13 @@ or with lua
 ```lua
 :lua require("worktrees").new_worktree({
     branch = <branch>,
-    folder = <folder>(optional)
+    folder = <folder>(optional),
     base_branch = <base branch>(optional)
 })
 ```
+
+## TODO
+
+- [x]  Creation of new worktrees
+- [ ]  Switching to another worktree
+- [ ]  Tracking branch from remote to worktree
