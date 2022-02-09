@@ -35,20 +35,26 @@ M.setup = function(opts)
 
         M.switch_worktree(args[1])
     end, { nargs = 1 })
-    vim.api.nvim_add_user_command("GitWorktreeTrack", M.new_worktree_track, {})
+
+    vim.api.nvim_add_user_command("GitWorktreeTrack", function(input)
+        local args = input.args:split_string(" ")
+
+        if not args[1] or not args[2] then
+            return
+        end
+        M.new_worktree_track(args[1], args[2])
+    end, { nargs = "*" })
 end
 
 M.new_worktree = function(opts)
     vim.notify("Creating new worktree")
-
-    vim.notify(vim.inspect(opts))
 
     if not opts.branch then
         return
     end
 
     local folder = opts.folder or opts.branch
-    local relative_path = utils.get_relative_worktree_path(folder)
+    local relative_path = utils.get_worktree_path(folder)
 
     -- Create custom job for creating new worktree
     local cmd = "git"
@@ -93,12 +99,28 @@ M.switch_worktree = function(input)
     utils.update_current_buffer(before_git_path_info)
 end
 
-M.new_worktree_track = function()
+M.new_worktree_track = function(folder, branch)
     vim.notify_once(
         "Creating new worktree and setting it up to track remote branch"
     )
 
-    -- TODO: Create new worktree to track remote branch
+    if not folder or not branch then
+        return
+    end
+
+    local relative_path = utils.get_worktree_path(folder)
+
+    -- Create custom job for creating new worktree
+    local cmd = "git"
+    local args = {
+        "worktree",
+        "add",
+        relative_path,
+        branch,
+    }
+
+    local create_job = jobs.custom_job(cmd, args)
+    create_job:sync()
 end
 
 return M

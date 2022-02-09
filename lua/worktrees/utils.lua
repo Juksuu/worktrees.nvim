@@ -30,7 +30,7 @@ M.get_git_path_info = function()
     return git_info
 end
 
-M.get_relative_worktree_path = function(folder)
+M.get_worktree_path = function(folder)
     local git_info = M.get_git_path_info()
     local not_bare_path = git_info.toplevel_path:joinpath(folder)
 
@@ -49,7 +49,7 @@ M.get_worktrees = function()
 
     -- Parse worktree data from `git worktree list --porcelain` command
     local sha, path, branch, folder, is_bare = nil, nil, nil, nil, false
-    for _, worktree_data in pairs(worktrees) do
+    for _, worktree_data in ipairs(worktrees) do
         worktree_data = worktree_data:split_string(" ")
 
         -- Data has an empty line between worktrees
