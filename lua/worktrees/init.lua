@@ -86,28 +86,37 @@ M.new_worktree = function(opts)
     end
 
     status:info_nvim("Worktree created")
+
+    M.switch_worktree(nil, relative_path)
 end
 
-M.switch_worktree = function(input)
+M.switch_worktree = function(input, path)
+    local found_path = path
+    if input then
+        status:info_nvim("Finding worktree path")
+        local worktrees = utils.get_worktrees()
+        for _, worktree in ipairs(worktrees) do
+            if worktree.folder == input or worktree.branch == input then
+                found_path = worktree.path
+                break
+            end
+        end
+    end
+
+    if found_path == nil then
+        status:warn("Could not determine path to switch to. Aborting...")
+        return
+    end
+
     -- Save git info before changing directory
     local before_git_path_info = utils.get_git_path_info()
     if before_git_path_info == nil then
         return
     end
 
-    status:info_nvim("Finding worktree path")
-    local worktrees = utils.get_worktrees()
-    local path = nil
-    for _, worktree in ipairs(worktrees) do
-        if worktree.folder == input or worktree.branch == input then
-            path = worktree.path
-            break
-        end
-    end
-
     vim.schedule(function()
         -- Change neovim cwd
-        vim.loop.chdir(path)
+        vim.loop.chdir(found_path)
 
         -- Clear jumplist so that no file in the old worktree is present
         -- in the jumplist for accidental switching of worktrees
@@ -141,6 +150,8 @@ M.new_worktree_track = function(folder, branch)
         return
     end
     status:info_nvim("New worktree created for branch")
+
+    M.switch_worktree(nil, relative_path)
 end
 
 return M
