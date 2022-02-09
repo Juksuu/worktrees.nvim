@@ -1,5 +1,6 @@
-local jobs = require("worktrees.jobs")
 local Path = require("plenary.path")
+local jobs = require("worktrees.jobs")
+local status = require("worktrees.status")
 
 local M = {}
 
@@ -20,31 +21,55 @@ end
 
 M.get_git_path_info = function()
     local git_info = {}
-    git_info.is_bare_repo = M.str_to_boolean(
-        table.concat(jobs.is_bare_repo():sync())
-    )
 
-    local toplevel = table.concat(jobs.toplevel_dir():sync())
-    git_info.toplevel_path = Path:new(toplevel):parent()
+    local is_bare_repo = jobs.is_bare_repo()
+    if is_bare_repo == nil then
+        return nil
+    end
+
+    git_info.is_bare_repo = M.str_to_boolean(table.concat(is_bare_repo))
+
+    local toplevel = jobs.toplevel_dir()
+    if toplevel == nil then
+        git_info.toplevel_path = nil
+    else
+        git_info.toplevel_path = Path:new(table.concat(toplevel)):parent()
+    end
 
     return git_info
 end
 
 M.get_worktree_path = function(folder)
     local git_info = M.get_git_path_info()
-    local not_bare_path = git_info.toplevel_path:joinpath(folder)
+    if git_info == nil then
+        return nil
+    end
 
     -- If repository is bare we can just use the folder name as path
     -- Otherwise append folder name to git toplevel path
-    local path = Path:new(
-        (git_info.is_bare_repo and folder or not_bare_path:absolute())
-    )
+    local path
+    if git_info.is_bare_repo then
+        path = Path:new(folder)
+    else
+        if git_info.toplevel_path == nil then
+            status.warn(
+                "Repo is not bare and could not get git toplevel. Aborting..."
+            )
+            return nil
+        end
+
+        path = Path:new(git_info.toplevel_path:joinpath(folder):absolute())
+    end
 
     return path:make_relative(vim.loop.cwd())
 end
 
 M.get_worktrees = function()
-    local worktrees = jobs.list_worktrees():sync()
+    local worktrees = jobs.list_worktrees()
+    if worktrees == nil then
+        return nil
+    end
+
     local output = {}
 
     -- Parse worktree data from `git worktree list --porcelain` command
@@ -54,12 +79,15 @@ M.get_worktrees = function()
 
         -- Data has an empty line between worktrees
         if not worktree_data[1] and not is_bare then
-            table.insert(output, {
+            local data = {
                 sha = sha,
                 path = path,
                 branch = branch,
                 folder = folder,
-            })
+            }
+            table.insert(output, data)
+
+            status:info(string.format("Parsed worktree: %s", vim.inspect(data)))
 
             sha, path, branch = nil, nil, nil
         elseif worktree_data[1] == "worktree" then
