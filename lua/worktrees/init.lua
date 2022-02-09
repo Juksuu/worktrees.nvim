@@ -108,6 +108,10 @@ M.switch_worktree = function(input, path)
         return
     end
 
+    if found_path == vim.loop.cwd() then
+        return
+    end
+
     -- Save git info before changing directory
     local before_git_path_info = utils.get_git_path_info()
     if before_git_path_info == nil then
