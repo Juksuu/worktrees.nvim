@@ -120,7 +120,7 @@ M.switch_worktree = function(input, path)
 
     vim.schedule(function()
         -- Change neovim cwd
-        vim.loop.chdir(found_path)
+        vim.cmd("cd " .. found_path)
 
         -- Clear jumplist so that no file in the old worktree is present
         -- in the jumplist for accidental switching of worktrees
