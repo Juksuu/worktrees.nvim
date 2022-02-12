@@ -29,54 +29,50 @@ use({
 
 ## Usage
 
+All the commands and functions this plugin provides utilizes the vim.fn.input function to ask users for required or optional parameters. Optional parameters are indicated with (optional) in the input prompt
+
 ### Creating new worktree
 
 New worktree can be created using the provided command GitWorktreeCreate
 
 ```
-:GitWorktreeCreate <branch> <folder>(optional) <base branch>(optional)
+:GitWorktreeCreate
 ```
 
 or with lua
 
 ```lua
-:lua require("worktrees").new_worktree({
-    branch = <branch>,
-    folder = <folder>(optional),
-    base_branch = <base branch>(optional)
-})
+:lua require("worktrees").new_worktree()
 ```
 
 ### Switching to another worktree
-
-Switching to another worktree requires a parameter that can be either branch name or folder name.
 
 If a file is open in a buffer when switching, the plugin will try to find the file in the other worktree, if it exists it will change the buffer to correspond to the new worktree file. Otherwise Ex is opened (will most likely change this to be configurable)
 
 Switching can be done using the provided command GitWorktreeSwitch
 
 ```
-:GitWorktreeSwitch <branch/folder>
+:GitWorktreeSwitch
 ```
 
 or with lua
 
 ```lua
-:lua require("worktrees").switch_worktree(<branch/folder>)
+:lua require("worktrees").switch_worktree()
 ```
 
-### Tracking an existing branch to worktree
+### Creating worktree for existing branch
 
-Tracking and existing branch to worktree can be done with the provided command GitWorktreeTrack
+Creating worktree for existing branch can be done with the provided command GitWorktreeCreateExisting
 
 ```
-:GitWorktreeTrack <branch> <folder>
+:GitWorktreeCreateExisting
 ```
 
 or with lua 
 
 ```lua
-:lua require("worktrees").new_worktree_track(<branch>, <folder>)
+:lua require("worktrees").new_worktree(true)
 ```
 
 ## Telescope
@@ -125,6 +121,6 @@ git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 
 ## TODO
 
-- [ ]  Possibly use vim.fn.input in commands and functions instead of parameters
+- [x]  Possibly use vim.fn.input in commands and functions instead of parameters
 - [ ]  Adding telescope prompt for selecting base branch or branch to track (would work well with using vim.fn.input)
 - [ ]  Options to customize behavior
