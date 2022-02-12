@@ -15,51 +15,29 @@ M.setup = function(opts)
 
     status:init(M._options.log_level, M._options.log_status)
 
-    vim.api.nvim_add_user_command("GitWorktreeCreate", function(input)
-        local args = input.args:split_string(" ")
-        if not args[1] then
-            status:warn("Not enough arguments passed. Aborting...")
-            return
-        end
+    vim.api.nvim_add_user_command("GitWorktreeCreate", function()
+        M.new_worktree(false)
+    end, { nargs = 0 })
 
-        local create_opts = {
-            branch = args[1],
-            folder = args[2],
-            base_branch = args[3],
-        }
+    vim.api.nvim_add_user_command("GitWorktreeSwitch", function()
+        M.switch_worktree()
+    end, { nargs = 0 })
 
-        M.new_worktree(create_opts)
-    end, { nargs = "*" })
-
-    vim.api.nvim_add_user_command("GitWorktreeSwitch", function(input)
-        local args = input.args:split_string(" ")
-
-        if not args[1] then
-            status:warn("Not enough arguments passed. Aborting...")
-            return
-        end
-
-        M.switch_worktree(args[1])
-    end, { nargs = 1 })
-
-    vim.api.nvim_add_user_command("GitWorktreeTrack", function(input)
-        local args = input.args:split_string(" ")
-
-        if not args[1] or not args[2] then
-            status:warn("Not enough arguments passed. Aborting...")
-            return
-        end
-        M.new_worktree_track(args[1], args[2])
-    end, { nargs = "*" })
+    vim.api.nvim_add_user_command("GitWorktreeCreateExisting", function()
+        M.new_worktree(true)
+    end, { nargs = 0 })
 end
 
-M.new_worktree = function(opts)
-    if not opts.branch then
-        status:warn("Not enough arguments passed. Aborting...")
+M.new_worktree = function(existing_branch)
+    local branch = vim.fn.input("Branch name: ")
+    if branch == "" then
+        status:warn("No branch name provided. Aborting...")
         return
     end
 
-    local folder = opts.folder or opts.branch
+    local folder = vim.fn.input("Folder name: ")
+    folder = folder == "" and branch or folder
+
     local relative_path = utils.get_worktree_path(folder)
     if relative_path == nil then
         return
@@ -70,13 +48,21 @@ M.new_worktree = function(opts)
     local args = {
         "worktree",
         "add",
-        "-b",
-        opts.branch,
-        relative_path,
     }
 
-    if opts.base_branch then
-        table.insert(args, opts.base_branch)
+    if not existing_branch then
+        table.insert(args, "-b")
+        table.insert(args, branch)
+        table.insert(args, relative_path)
+
+        local base_branch = vim.fn.input("Base branch name: ")
+
+        if base_branch ~= "" then
+            table.insert(args, base_branch)
+        end
+    else
+        table.insert(args, relative_path)
+        table.insert(args, branch)
     end
 
     local _, code = jobs.custom_job(cmd, args):sync()
@@ -87,12 +73,13 @@ M.new_worktree = function(opts)
 
     status:info_nvim("Worktree created")
 
-    M.switch_worktree(nil, relative_path)
+    M.switch_worktree(relative_path)
 end
 
-M.switch_worktree = function(input, path)
+M.switch_worktree = function(path)
     local found_path = path
-    if input then
+    if not found_path then
+        local input = vim.fn.input("Branch/folder to switch to: ")
         status:info_nvim("Finding worktree path")
         local worktrees = utils.get_worktrees()
         for _, worktree in ipairs(worktrees) do
@@ -131,11 +118,14 @@ M.switch_worktree = function(input, path)
     end)
 end
 
-M.new_worktree_track = function(folder, branch)
-    if not folder or not branch then
-        status:warn("Not enough arguments passed. Aborting...")
-        return
+M.new_worktree_track = function()
+    local branch = vim.fn.input("Branch name: ")
+    if branch == "" then
+        status:warn("No branch provided. Aborting...")
     end
+
+    local folder = vim.fn.input("Folder name: ")
+    folder = folder == "" and branch or folder
 
     local relative_path = utils.get_worktree_path(folder)
 
@@ -155,7 +145,7 @@ M.new_worktree_track = function(folder, branch)
     end
     status:info_nvim("New worktree created for branch")
 
-    M.switch_worktree(nil, relative_path)
+    M.switch_worktree(relative_path)
 end
 
 return M

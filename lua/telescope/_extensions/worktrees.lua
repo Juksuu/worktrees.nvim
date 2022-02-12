@@ -14,7 +14,7 @@ local switch_worktree = function(prompt_bufnr)
     actions.close(prompt_bufnr)
 
     if path ~= nil then
-        worktrees.switch_worktree(nil, path)
+        worktrees.switch_worktree(path)
     end
 end
 
