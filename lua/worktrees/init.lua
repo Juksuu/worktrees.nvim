@@ -35,7 +35,7 @@ M.new_worktree = function(existing_branch)
         return
     end
 
-    local folder = vim.fn.input("Folder name: ")
+    local folder = vim.fn.input("Folder name (optional): ")
     folder = folder == "" and branch or folder
 
     local relative_path = utils.get_worktree_path(folder)
@@ -55,7 +55,7 @@ M.new_worktree = function(existing_branch)
         table.insert(args, branch)
         table.insert(args, relative_path)
 
-        local base_branch = vim.fn.input("Base branch name: ")
+        local base_branch = vim.fn.input("Base branch name (optional): ")
 
         if base_branch ~= "" then
             table.insert(args, base_branch)
