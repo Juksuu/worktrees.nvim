@@ -15,15 +15,15 @@ M.setup = function(opts)
 
     status:init(M._options.log_level, M._options.log_status)
 
-    vim.api.nvim_add_user_command("GitWorktreeCreate", function()
+    vim.api.nvim_create_user_command("GitWorktreeCreate", function()
         M.new_worktree(false)
     end, { nargs = 0 })
 
-    vim.api.nvim_add_user_command("GitWorktreeSwitch", function()
+    vim.api.nvim_create_user_command("GitWorktreeSwitch", function()
         M.switch_worktree()
     end, { nargs = 0 })
 
-    vim.api.nvim_add_user_command("GitWorktreeCreateExisting", function()
+    vim.api.nvim_create_user_command("GitWorktreeCreateExisting", function()
         M.new_worktree(true)
     end, { nargs = 0 })
 end
