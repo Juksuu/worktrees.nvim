@@ -74,6 +74,23 @@ M.new_worktree = function(existing_branch)
     status:info_nvim("Worktree created")
 
     M.switch_worktree(relative_path)
+
+    if existing_branch then
+        vim.schedule(function()
+            -- Update upstream for new branch
+            local upstream_args = {
+                "branch",
+                "--set-upstream-to=origin/" .. branch,
+            }
+
+            local _, upstream_code = jobs.custom_job(cmd, upstream_args):sync()
+            if upstream_code ~= 0 then
+                status:warn("Could not set upstream for current worktree")
+                return
+            end
+            status:info_nvim("Successfully set upstream")
+        end)
+    end
 end
 
 M.switch_worktree = function(path)
@@ -116,36 +133,6 @@ M.switch_worktree = function(path)
         utils.update_current_buffer(before_git_path_info)
         status:info_nvim("Updating buffer")
     end)
-end
-
-M.new_worktree_track = function()
-    local branch = vim.fn.input("Branch name: ")
-    if branch == "" then
-        status:warn("No branch provided. Aborting...")
-    end
-
-    local folder = vim.fn.input("Folder name: ")
-    folder = folder == "" and branch or folder
-
-    local relative_path = utils.get_worktree_path(folder)
-
-    -- Create custom job for creating new worktree
-    local cmd = "git"
-    local args = {
-        "worktree",
-        "add",
-        relative_path,
-        branch,
-    }
-
-    local _, code = jobs.custom_job(cmd, args):sync()
-    if code ~= 0 then
-        status:warn("Could not create worktree with arguments. Aborting...")
-        return
-    end
-    status:info_nvim("New worktree created for branch")
-
-    M.switch_worktree(relative_path)
 end
 
 return M
