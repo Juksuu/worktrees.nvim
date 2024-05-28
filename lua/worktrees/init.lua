@@ -99,10 +99,12 @@ M.switch_worktree = function(path)
         local input = vim.fn.input("Branch/folder to switch to: ")
         status:info_nvim("Finding worktree path")
         local worktrees = utils.get_worktrees()
-        for _, worktree in ipairs(worktrees) do
-            if worktree.folder == input or worktree.branch == input then
-                found_path = worktree.path
-                break
+        if worktrees ~= nil then
+            for _, worktree in ipairs(worktrees) do
+                if worktree.folder == input or worktree.branch == input then
+                    found_path = worktree.path
+                    break
+                end
             end
         end
     end

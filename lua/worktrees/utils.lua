@@ -5,10 +5,10 @@ local status = require("worktrees.status")
 local M = {}
 
 -- Setup string splitting
-function string:split_string(sep)
+M.split_string = function(s, sep)
     local fields = {}
     local pattern = string.format("([^%s]+)", sep)
-    local _ = self:gsub(pattern, function(c)
+    local _ = s:gsub(pattern, function(c)
         fields[#fields + 1] = c
     end)
 
@@ -75,7 +75,7 @@ M.get_worktrees = function()
     -- Parse worktree data from `git worktree list --porcelain` command
     local sha, path, branch, folder, is_bare = nil, nil, nil, nil, false
     for _, worktree_data in ipairs(worktrees) do
-        worktree_data = worktree_data:split_string(" ")
+        worktree_data = M.split_string(worktree_data, " ")
 
         -- Data has an empty line between worktrees
         if not worktree_data[1] and not is_bare then
@@ -94,12 +94,12 @@ M.get_worktrees = function()
             is_bare = false
             path = worktree_data[2]
 
-            local split_path = worktree_data[2]:split_string("/")
+            local split_path = M.split_string(worktree_data[2], "/")
             folder = split_path[#split_path]
         elseif worktree_data[1] == "HEAD" then
             sha = worktree_data[2]
         elseif worktree_data[1] == "branch" then
-            local split_path = worktree_data[2]:split_string("/")
+            local split_path = M.split_string(worktree_data[2], "/")
             branch = split_path[#split_path]
         elseif worktree_data[1] == "bare" then
             is_bare = true
@@ -121,14 +121,12 @@ M.update_current_buffer = function(git_path_info)
 
     -- Construct path where file would exists in worktree where we are changing to
     -- Example: worktree/test/text.txt -> new_worktree/test/text.txt
-    local relative_path = buffer_path:make_relative(
-        git_path_info.toplevel_path:absolute()
-    )
-    local split_path = relative_path:split_string("/")
+    local relative_path =
+        buffer_path:make_relative(git_path_info.toplevel_path:absolute())
+    local split_path = M.split_string(relative_path, "/")
     table.remove(split_path, 1)
-    local buffer_path_in_new_cwd = Path:new(
-        cwd .. "/" .. table.concat(split_path, "/")
-    )
+    local buffer_path_in_new_cwd =
+        Path:new(cwd .. "/" .. table.concat(split_path, "/"))
 
     if not buffer_path_in_new_cwd:exists() then
         vim.cmd("e .")
