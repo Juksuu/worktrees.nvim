@@ -1,7 +1,6 @@
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local actions = require("telescope.actions")
-local action_set = require("telescope.actions.set")
 local action_state = require("telescope.actions.state")
 local telescope_utils = require("telescope.utils")
 local conf = require("telescope.config").values
@@ -22,6 +21,9 @@ local telescope_list_worktrees = function(opts)
     opts = opts or {}
 
     local found_worktrees = worktrees_utils.get_worktrees()
+    if found_worktrees == nil then
+        return
+    end
 
     local widths = {
         sha = 0,
@@ -47,28 +49,33 @@ local telescope_list_worktrees = function(opts)
     local make_display = function(entry)
         return displayer({
             { entry.branch, "TelescopeResultsIdentifier" },
-            { telescope_utils.transform_path(opts, entry.path) },
-            { entry.sha },
+            {
+                telescope_utils.transform_path(opts, entry.path),
+                "TelescopeResultsField",
+            },
+            { entry.sha, "TelescopeResultsNumber" },
         })
     end
 
-    pickers.new(opts or {}, {
-        prompt_title = "Git Worktrees",
-        finder = finders.new_table({
-            results = found_worktrees,
-            entry_maker = function(entry)
-                entry.value = entry.branch
-                entry.ordinal = entry.branch
-                entry.display = make_display
-                return entry
+    pickers
+        .new(opts or {}, {
+            prompt_title = "Git Worktrees",
+            finder = finders.new_table({
+                results = found_worktrees,
+                entry_maker = function(entry)
+                    entry.value = entry.branch
+                    entry.ordinal = entry.branch
+                    entry.display = make_display
+                    return entry
+                end,
+            }),
+            sorter = conf.generic_sorter(opts),
+            attach_mappings = function(_, _)
+                actions.select_default:replace(switch_worktree)
+                return true
             end,
-        }),
-        sorter = conf.generic_sorter(opts),
-        attach_mappings = function(_, _)
-            action_set.select:replace(switch_worktree)
-            return true
-        end,
-    }):find()
+        })
+        :find()
 end
 
 return require("telescope").register_extension({
