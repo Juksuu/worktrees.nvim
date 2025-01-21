@@ -12,7 +12,7 @@ After using [git-worktree.nvim](https://github.com/ThePrimeagen/git-worktree.nvi
 
 ## Installation
 
-Install the plugin and dependencies with prefered plugin manager
+Install the plugin and dependencies with preferred plugin manager
 
 ### Packer
 
@@ -69,7 +69,7 @@ Creating worktree for existing branch can be done with the provided command GitW
 :GitWorktreeCreateExisting
 ```
 
-or with lua 
+or with lua
 
 ```lua
 :lua require("worktrees").new_worktree(true)
@@ -88,6 +88,14 @@ require("telescope").load_extension("worktrees")
 ```lua
 require("telescope").extensions.worktrees.list_worktrees(opts)
 -- <Enter> - switches to that worktree
+```
+
+## Snacks.nvim
+
+Worktrees can also be switched using snacks.nvim
+
+```lua
+vim.keymap.set("n", "<leader>gws", function() Snacks.picker.worktrees() end)
 ```
 
 ## Troubleshooting

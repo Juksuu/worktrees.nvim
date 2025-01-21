@@ -26,6 +26,10 @@ M.setup = function(opts)
     vim.api.nvim_create_user_command("GitWorktreeCreateExisting", function()
         M.new_worktree(true)
     end, { nargs = 0 })
+
+    if Snacks and pcall(require, "snacks.picker") then
+        Snacks.picker.sources.worktrees = require("worktrees.snacks")
+    end
 end
 
 M.new_worktree = function(existing_branch)
