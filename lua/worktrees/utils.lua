@@ -101,6 +101,8 @@ M.get_worktrees = function()
         elseif worktree_data[1] == "branch" then
             local split_path = M.split_string(worktree_data[2], "/")
             branch = split_path[#split_path]
+        elseif worktree_data[1] == "detached" then
+            branch = "detached HEAD"
         elseif worktree_data[1] == "bare" then
             is_bare = true
         end
