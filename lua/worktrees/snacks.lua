@@ -18,7 +18,7 @@ function New.confirm(picker, item)
     local branch_name = picker.finder.filter.pattern
     if item ~= nil then
         existing_branch = true
-        branch_name = item.file
+        branch_name = item.branch
     end
 
     worktrees.new_worktree(existing_branch, branch_name)
