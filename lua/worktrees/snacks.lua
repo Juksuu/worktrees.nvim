@@ -1,13 +1,37 @@
 local worktrees = require("worktrees")
 local worktrees_utils = require("worktrees.utils")
 
-local M = {
+---@type snacks.picker.Config
+local New = {
+    title = "New Worktree",
+    finder = "git_branches",
+    format = "git_branch",
+    preview = "git_log",
+}
+
+---@param picker snacks.Picker
+---@param item? snacks.picker.Item
+function New.confirm(picker, item)
+    picker:close()
+
+    local existing_branch = false
+    local branch_name = picker.finder.filter.pattern
+    if item ~= nil then
+        existing_branch = true
+        branch_name = item.branch
+    end
+
+    worktrees.new_worktree(existing_branch, branch_name)
+end
+
+---@type snacks.picker.Config
+local Switch = {
+    title = "Worktrees",
     preview = "preview",
 }
 
----@param opts snacks.picker.Config
 ---@type snacks.picker.finder
-function M.finder(opts, filter)
+function Switch.finder(_, _)
     local found_worktrees = worktrees_utils.get_worktrees()
     if found_worktrees == nil then
         found_worktrees = {}
@@ -37,7 +61,7 @@ end
 
 ---@param item snacks.picker.Item
 ---@param picker snacks.Picker
-function M.format(item, picker)
+function Switch.format(item, picker)
     local ret = {} --@type snacks.picker.Highlight[]
     ret[#ret + 1] = { item.branch, "SnacksPickerGitBranch" }
     ret[#ret + 1] = { " " }
@@ -49,7 +73,7 @@ end
 
 ---@param picker snacks.Picker
 ---@param item? snacks.picker.Item
-function M.confirm(picker, item)
+function Switch.confirm(picker, item)
     picker:close()
 
     if item ~= nil then
@@ -57,4 +81,8 @@ function M.confirm(picker, item)
     end
 end
 
-return M
+---@type table<snacks.picker.Config>
+return {
+    new = New,
+    switch = Switch,
+}

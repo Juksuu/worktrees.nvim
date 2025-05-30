@@ -92,10 +92,11 @@ require("telescope").extensions.worktrees.list_worktrees(opts)
 
 ## Snacks.nvim
 
-Worktrees can also be switched using snacks.nvim
+Worktrees can also be created and switched using snacks.nvim
 
 ```lua
 vim.keymap.set("n", "<leader>gws", function() Snacks.picker.worktrees() end)
+vim.keymap.set("n", "<leader>gwn", function() Snacks.picker.worktrees_new() end)
 ```
 
 ## Troubleshooting

@@ -28,12 +28,16 @@ M.setup = function(opts)
     end, { nargs = 0 })
 
     if Snacks and pcall(require, "snacks.picker") then
-        Snacks.picker.sources.worktrees = require("worktrees.snacks")
+        local snacks = require("worktrees.snacks")
+        Snacks.picker.sources.worktrees= snacks.switch
+        Snacks.picker.sources.worktrees_new = snacks.new
     end
 end
 
-M.new_worktree = function(existing_branch)
-    local branch = vim.fn.input("Branch name: ")
+---@param existing_branch? boolean Use existing branch
+---@param branch_name? string Branch name to use. Prompts for the name if not provided
+M.new_worktree = function(existing_branch, branch_name)
+    local branch = branch_name or vim.fn.input("Branch name: ")
     if branch == "" then
         status:warn("No branch name provided. Aborting...")
         return
