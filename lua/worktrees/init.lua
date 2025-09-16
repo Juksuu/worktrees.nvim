@@ -27,10 +27,15 @@ M.setup = function(opts)
         M.new_worktree(true)
     end, { nargs = 0 })
 
+    vim.api.nvim_create_user_command("GitWorktreeRemove", function()
+        M.remove_worktree()
+    end, { nargs = 0 })
+
     if Snacks and pcall(require, "snacks.picker") then
         local snacks = require("worktrees.snacks")
-        Snacks.picker.sources.worktrees= snacks.switch
+        Snacks.picker.sources.worktrees = snacks.switch
         Snacks.picker.sources.worktrees_new = snacks.new
+        Snacks.picker.sources.worktrees_remove = snacks.remove
     end
 end
 
@@ -143,6 +148,67 @@ M.switch_worktree = function(path)
         utils.update_current_buffer(before_git_path_info)
         status:info_nvim("Updating buffer")
     end)
+end
+
+M.remove_worktree = function(path)
+    local found_path = path
+    if not found_path then
+        local input = vim.fn.input("Worktree branch/folder to remove: ")
+        status:info_nvim("Finding worktree path")
+        local worktrees = utils.get_worktrees()
+        if worktrees ~= nil then
+            for _, worktree in ipairs(worktrees) do
+                if worktree.folder == input or worktree.branch == input then
+                    found_path = worktree.path
+                    break
+                end
+            end
+        end
+    end
+
+    if found_path == nil then
+        status:warn("Could not determine path to remove. Aborting...")
+        return
+    end
+
+    if found_path == vim.loop.cwd() then
+        local before_git_path_info = utils.get_git_path_info()
+        if before_git_path_info == nil then
+            return
+        end
+
+        vim.schedule(function()
+            -- Change neovim cwd
+            vim.cmd("cd " .. before_git_path_info.toplevel_path:absolute())
+
+            -- Clear jumplist so that no file in the old worktree is present
+            -- in the jumplist for accidental switching of worktrees
+            vim.cmd("clearjumps")
+
+            local buffers = vim.api.nvim_list_bufs()
+            for _, buffer_id in ipairs(buffers) do
+                vim.api.nvim_buf_delete(buffer_id, {})
+            end
+
+            vim.cmd("e .")
+        end)
+    end
+
+    -- Create custom job for creating new worktree
+    local cmd = "git"
+    local args = {
+        "worktree",
+        "remove",
+        found_path,
+    }
+
+    local _, code = jobs.custom_job(cmd, args):sync()
+    if code ~= 0 then
+        status:warn("Could not delete worktree with arguments. Aborting...")
+        return
+    end
+
+    status:info_nvim("Worktree removed")
 end
 
 return M
