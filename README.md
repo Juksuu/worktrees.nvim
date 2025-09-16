@@ -9,6 +9,7 @@ After using [git-worktree.nvim](https://github.com/ThePrimeagen/git-worktree.nvi
 - neovim nightly (0.7+)
 - [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) (optional)
+- [snacks.nvim](https://github.com/folke/snacks.nvim) (optional)
 
 ## Installation
 
@@ -75,6 +76,20 @@ or with lua
 :lua require("worktrees").new_worktree(true)
 ```
 
+### Remove existing worktree
+
+Creating worktree for existing branch can be done with the provided command GitWorktreeRemove
+
+```
+:GitWorktreeRemove
+```
+
+or with lua
+
+```lua
+:lua require("worktrees").remove_worktree()
+```
+
 ## Telescope
 
 The extension can be loaded with telescope
@@ -92,11 +107,12 @@ require("telescope").extensions.worktrees.list_worktrees(opts)
 
 ## Snacks.nvim
 
-Worktrees can also be created and switched using snacks.nvim
+Worktrees can also be created, switched and removed using snacks.nvim
 
 ```lua
 vim.keymap.set("n", "<leader>gws", function() Snacks.picker.worktrees() end)
 vim.keymap.set("n", "<leader>gwn", function() Snacks.picker.worktrees_new() end)
+vim.keymap.set("n", "<leader>gwr", function() Snacks.picker.worktrees_remove() end)
 ```
 
 ## Troubleshooting
@@ -130,6 +146,4 @@ git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 
 ## TODO
 
-- [x]  Possibly use vim.fn.input in commands and functions instead of parameters
-- [ ]  Adding telescope prompt for selecting base branch or branch to track (would work well with using vim.fn.input)
 - [ ]  Options to customize behavior
