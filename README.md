@@ -78,7 +78,7 @@ or with lua
 
 ### Remove existing worktree
 
-Creating worktree for existing branch can be done with the provided command GitWorktreeRemove
+Remove worktree for existing branch can be done with the provided command GitWorktreeRemove
 
 ```
 :GitWorktreeRemove
