@@ -12,7 +12,7 @@ M._default_options = {
 
 M.setup = function(opts)
     local options = opts or {}
-    M._options = vim.tbl_deep_extend("force", options, M._default_options)
+    M._options = vim.tbl_deep_extend("force", M._default_options, options)
 
     status:init(M._options.log_level, M._options.log_status)
 
