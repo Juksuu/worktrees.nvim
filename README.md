@@ -124,9 +124,22 @@ The log file resides in neovims cache path and the logging level can be changed 
 ```lua
 require("worktrees").setup({
     log_level = <one of vim.log.levels> -- default vim.log.levels.WARN,
-    log_status = <boolean> -- default true
+    log_status = <boolean>, -- default true
+    worktree_path = <string> -- default ".."
 })
 ```
+
+`worktree_path` controls where new worktrees are created:
+
+- `".."` uses the default behavior and creates the worktree under the parent
+  of the repository root.
+- Any other value is used as a custom root directory and new worktrees are
+  created under `<worktree_path>/<projectname>/<folder>`.
+
+Path notes:
+
+- `~` is expanded.
+- Relative paths are resolved against current Neovim `cwd`.
 
 ### Upstream setup
 

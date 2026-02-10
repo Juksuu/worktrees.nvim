@@ -7,11 +7,12 @@ local M = {}
 M._default_options = {
     log_level = vim.log.levels.WARN,
     log_status = true,
+    worktree_path = "..",
 }
 
 M.setup = function(opts)
     local options = opts or {}
-    M._options = vim.tbl_deep_extend("force", options, M._default_options)
+    M._options = vim.tbl_deep_extend("force", M._default_options, options)
 
     status:init(M._options.log_level, M._options.log_status)
 
@@ -51,7 +52,8 @@ M.new_worktree = function(existing_branch, branch_name)
     local folder = vim.fn.input("Folder name (optional): ")
     folder = folder == "" and branch or folder
 
-    local relative_path = utils.get_worktree_path(folder)
+    local relative_path =
+        utils.get_worktree_path(folder, M._options.worktree_path)
     if relative_path == nil then
         return
     end

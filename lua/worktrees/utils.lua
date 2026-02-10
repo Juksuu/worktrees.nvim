@@ -39,26 +39,68 @@ M.get_git_path_info = function()
     return git_info
 end
 
-M.get_worktree_path = function(folder)
+local function get_path_basename(path)
+    local split_path = M.split_string(path, "/")
+    return split_path[#split_path]
+end
+
+local function get_project_name()
+    local toplevel = jobs.toplevel_dir()
+    local projectname
+
+    if toplevel ~= nil then
+        projectname = get_path_basename(table.concat(toplevel))
+    end
+
+    if projectname == nil or projectname == "" then
+        projectname = get_path_basename(vim.loop.cwd())
+    end
+
+    projectname = projectname:gsub("%.git$", "")
+    if projectname == "" then
+        projectname = "project"
+    end
+
+    return projectname
+end
+
+M.get_worktree_path = function(folder, worktree_path)
     local git_info = M.get_git_path_info()
     if git_info == nil then
         return nil
     end
 
-    -- If repository is bare we can just use the folder name as path
-    -- Otherwise append folder name to git toplevel path
     local path
-    if git_info.is_bare_repo then
-        path = Path:new(folder)
+    if worktree_path == ".." then
+        -- If repository is bare we can just use the folder name as path
+        -- Otherwise append folder name to git toplevel path
+        if git_info.is_bare_repo then
+            path = Path:new(folder)
+        else
+            if git_info.toplevel_path == nil then
+                status.warn(
+                    "Repo is not bare and could not get git toplevel. Aborting..."
+                )
+                return nil
+            end
+
+            path = Path:new(git_info.toplevel_path:joinpath(folder):absolute())
+        end
     else
-        if git_info.toplevel_path == nil then
-            status.warn(
-                "Repo is not bare and could not get git toplevel. Aborting..."
-            )
-            return nil
+        local configured_root = vim.fn.expand(worktree_path)
+        if configured_root == "" then
+            configured_root = "."
         end
 
-        path = Path:new(git_info.toplevel_path:joinpath(folder):absolute())
+        local root_path = Path:new(configured_root)
+        if not root_path:is_absolute() then
+            root_path = Path:new(vim.loop.cwd() .. "/" .. configured_root)
+        end
+
+        local projectname = get_project_name()
+        path = Path:new(
+            root_path:joinpath(projectname):joinpath(folder):absolute()
+        )
     end
 
     return path:make_relative(vim.loop.cwd())
