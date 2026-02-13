@@ -188,10 +188,7 @@ M.remove_worktree = function(path)
             -- in the jumplist for accidental switching of worktrees
             vim.cmd("clearjumps")
 
-            local buffers = vim.api.nvim_list_bufs()
-            for _, buffer_id in ipairs(buffers) do
-                vim.api.nvim_buf_delete(buffer_id, {})
-            end
+            utils.delete_buffers()
 
             utils.open_netrw_if_enabled(M._options.use_netrw)
         end)
