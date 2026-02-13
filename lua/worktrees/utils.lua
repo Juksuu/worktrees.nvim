@@ -153,13 +153,11 @@ M.get_worktrees = function()
     return output
 end
 
-M.update_current_buffer = function(git_path_info, use_netrw)
-    local cwd = vim.loop.cwd()
-
+M.update_current_buffer = function(new_cwd, git_path_info, use_netrw)
     -- Check if buffer is a file and cwd is not bare repo
     local buffer_path = Path:new(vim.api.nvim_buf_get_name(0))
     if not buffer_path:is_file() or git_path_info.is_bare_repo then
-        M.open_netrw_if_enabled(use_netrw)
+        M.open_netrw_if_enabled(use_netrw, new_cwd)
         return
     end
 
@@ -170,12 +168,12 @@ M.update_current_buffer = function(git_path_info, use_netrw)
     local split_path = M.split_string(relative_path, "/")
     table.remove(split_path, 1)
     local buffer_path_in_new_cwd =
-        Path:new(cwd .. "/" .. table.concat(split_path, "/"))
+        Path:new(new_cwd .. "/" .. table.concat(split_path, "/"))
 
     M.delete_buffers()
 
     if not buffer_path_in_new_cwd:exists() then
-        M.open_netrw_if_enabled(use_netrw)
+        M.open_netrw_if_enabled(use_netrw, new_cwd)
         return
     end
 

@@ -141,15 +141,19 @@ M.switch_worktree = function(path)
     end
 
     vim.schedule(function()
-        -- Change neovim cwd
-        vim.cmd("cd " .. found_path)
-
         -- Clear jumplist so that no file in the old worktree is present
         -- in the jumplist for accidental switching of worktrees
         vim.cmd("clearjumps")
 
-        utils.update_current_buffer(before_git_path_info, M._options.use_netrw)
+        utils.update_current_buffer(
+            found_path,
+            before_git_path_info,
+            M._options.use_netrw
+        )
         status:info_nvim("Updating buffer")
+
+        -- Change neovim cwd
+        vim.cmd("cd " .. found_path)
     end)
 end
 
