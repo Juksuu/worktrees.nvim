@@ -8,6 +8,7 @@ M._default_options = {
     log_level = vim.log.levels.WARN,
     log_status = true,
     worktree_path = "..",
+    use_netrw = true,
 }
 
 M.setup = function(opts)
@@ -147,7 +148,7 @@ M.switch_worktree = function(path)
         -- in the jumplist for accidental switching of worktrees
         vim.cmd("clearjumps")
 
-        utils.update_current_buffer(before_git_path_info)
+        utils.update_current_buffer(before_git_path_info, M._options.use_netrw)
         status:info_nvim("Updating buffer")
     end)
 end
@@ -192,7 +193,7 @@ M.remove_worktree = function(path)
                 vim.api.nvim_buf_delete(buffer_id, {})
             end
 
-            vim.cmd("e .")
+            utils.open_netrw_if_enabled(M._options.use_netrw)
         end)
     end
 

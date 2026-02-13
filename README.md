@@ -28,6 +28,33 @@ use({
 })
 ```
 
+## Options
+
+```lua
+require("worktrees").setup({
+    log_level = <one of vim.log.levels> -- default: vim.log.levels.WARN,
+    log_status = <boolean> -- default: true
+    worktree_path = <string> -- default: ".."
+    use_netrw = <boolean> -- default: true
+})
+```
+
+`log_` options are described in the [Troubleshooting](#troubleshooting) section
+
+`worktree_path` controls where new worktrees are created:
+
+- `".."` uses the default behavior and creates the worktree under the parent
+  of the repository root.
+- Any other value is used as a custom root directory and new worktrees are
+  created under `<worktree_path>/<projectname>/<folder>`.
+
+Path notes:
+
+- `~` is expanded.
+- Relative paths are resolved against current Neovim `cwd`.
+
+`use_netrw` controls whether to open netrw when switching worktrees or removing worktree and no buffer is available for use
+
 ## Usage
 
 All the commands and functions this plugin provides utilizes the vim.fn.input function to ask users for required or optional parameters. Optional parameters are indicated with (optional) in the input prompt
@@ -48,7 +75,7 @@ or with lua
 
 ### Switching to another worktree
 
-If a file is open in a buffer when switching, the plugin will try to find the file in the other worktree, if it exists it will change the buffer to correspond to the new worktree file. Otherwise Ex is opened (will most likely change this to be configurable)
+If a file is open in a buffer when switching, the plugin will try to find the file in the other worktree, if it exists it will change the buffer to correspond to the new worktree file.
 
 Switching can be done using the provided command GitWorktreeSwitch
 
@@ -125,21 +152,9 @@ The log file resides in neovims cache path and the logging level can be changed 
 require("worktrees").setup({
     log_level = <one of vim.log.levels> -- default vim.log.levels.WARN,
     log_status = <boolean>, -- default true
-    worktree_path = <string> -- default ".."
 })
 ```
 
-`worktree_path` controls where new worktrees are created:
-
-- `".."` uses the default behavior and creates the worktree under the parent
-  of the repository root.
-- Any other value is used as a custom root directory and new worktrees are
-  created under `<worktree_path>/<projectname>/<folder>`.
-
-Path notes:
-
-- `~` is expanded.
-- Relative paths are resolved against current Neovim `cwd`.
 
 ### Upstream setup
 
